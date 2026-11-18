@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
-from typing import Dict, Any
+from typing import Dict, Any, List
 from app.services.cache import get_revenue_summary
-from app.services.reservations import calculate_monthly_revenue
+from app.services.reservations import calculate_monthly_revenue, get_tenant_properties
 from app.core.auth import authenticate_request as get_current_user
 from decimal import Decimal, ROUND_HALF_UP
 
@@ -21,6 +21,13 @@ def _summary_response(revenue_data: Dict[str, Any]) -> Dict[str, Any]:
         "currency": revenue_data['currency'],
         "reservations_count": revenue_data['count']
     }
+
+
+@router.get("/dashboard/properties")
+async def get_dashboard_properties(
+    current_user: dict = Depends(get_current_user)
+) -> List[Dict[str, str]]:
+    return await get_tenant_properties(_tenant_id(current_user))
 
 
 @router.get("/dashboard/summary")

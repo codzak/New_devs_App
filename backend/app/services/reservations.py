@@ -14,6 +14,22 @@ async def _get_session():
     return db_pool.get_session()
 
 
+async def get_tenant_properties(tenant_id: str) -> List[Dict[str, str]]:
+    """
+    Lists the properties owned by a tenant.
+    """
+    query = text("""
+        SELECT id, name
+        FROM properties
+        WHERE tenant_id = :tenant_id
+        ORDER BY id
+    """)
+
+    async with await _get_session() as session:
+        result = await session.execute(query, {"tenant_id": tenant_id})
+        return [{"id": row.id, "name": row.name} for row in result]
+
+
 async def calculate_monthly_revenue(property_id: str, tenant_id: str, month: int, year: int) -> Dict[str, Any]:
     """
     Calculates revenue for a month, as the month is defined in the property's time zone.
